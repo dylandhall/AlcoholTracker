@@ -20,9 +20,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet publish .\AlcoholTracker\AlcoholTracker.csproj -c Release -o release --nologo
+      run: dotnet publish .\AlcoholTracker\AlcoholTracker.csproj -c Release -o "$env:GITHUB_WORKSPACE\release\" --nologo
       env:
         Configuration: Release
+        GITHUB_WORKSPACE: ${{ github.workspace }}
     - name: Change base-tag in index.html from / to AlcoholTracker
       run: Get-Content $env:GITHUB_WORKSPACE\release\wwwroot\index.html | %{$_ -Replace "<base href=""/"" \/>", "<base href=""/AlcoholTracker/"" />"} |  Out-File -FilePath $env:GITHUB_WORKSPACE\release\wwwroot\index.html
       shell: powershell
