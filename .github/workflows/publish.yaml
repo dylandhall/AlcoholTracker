@@ -28,6 +28,10 @@ jobs:
       run: sed -i 's/<base href="\/" \/>/<base href="\/AlcoholTracker\/" \/>/g' $GITHUB_WORKSPACE/release/wwwroot/index.html
       env:
         GITHUB_WORKSPACE: ${{ github.workspace }}
+    - name: Add .nojekyll file
+      run: touch $GITHUB_WORKSPACE/release/wwwroot/.nojekyll
+      env:
+        GITHUB_WORKSPACE: ${{ github.workspace }}
 
     - name: Commit wwwroot to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
