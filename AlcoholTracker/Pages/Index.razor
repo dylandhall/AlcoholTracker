@@ -1,0 +1,138 @@
+﻿@page "/"
+@using System.Text.Json
+@using System.Diagnostics.CodeAnalysis
+@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
+
+<MudText Typo="Typo.h5" Align="Align.Center">Alcohol Tracking</MudText>
+
+<MudText Align="Align.Center" Typo="Typo.h6" >Current value: @BacTracker.GetPercentage().ToString("N3") % BAC</MudText>
+<MudText Align="Align.Center" Typo="Typo.subtitle2" >@BacTracker.GetPercentage(DateTimeOffset.UtcNow.AddHours(1)).ToString("N3") % BAC in one hour</MudText>
+<MudChart ChartType="ChartType.Line" SelectedIndex="0" XAxisLabels="BacTracker.XAxisLabels" ChartSeries="BacTracker.GetTimeSeries()" Width="100%" Height="350px" ChartOptions="_chartOptions" ></MudChart>
+
+<MudExpansionPanels>
+    <MudExpansionPanel Text="Drink by mL" IsInitiallyExpanded="true">
+        <MudSlider @bind-Value="@DrinkPercent" Min="0" Max="80" Step="0.1" ValueLabel="true">Alcohol %</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="DrinkPercent" Variant="Variant.Text" Min="0.0" Max="80" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> %
+
+        <MudSlider Style="margin-top: 1rem;" @bind-Value="@SizeInMl" Min="0" Max="2000" Step="5" ValueLabel="true">Size (mL)</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="SizeInMl" Variant="Variant.Text" Min="0" Max="2000" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> mL
+
+        <MudSlider  Style="margin-top: 1rem;"  @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
+
+        <div style="margin-top: 1.5rem;"><MudButton @onclick="AddDrinkInMl" Variant="Variant.Filled">Add drink</MudButton></div>
+    </MudExpansionPanel>
+    <MudExpansionPanel Text="Standard Drinks">
+        <MudSlider @bind-Value="@StandardDrinks" Min="0" Max="10" Step="0.1" ValueLabel="true">Standard drinks</MudSlider>
+                    <div style=" display: inline-block;"><MudNumericField @bind-Value="StandardDrinks" Variant="Variant.Text" Min="0.0" Max="10" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> 
+
+        <MudSlider  Style="margin-top: 1rem;"  @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
+
+        <div style="margin-top: 1.5rem;"><MudButton @onclick="AddStandardDrink" Variant="Variant.Filled">Add drink</MudButton></div>
+    </MudExpansionPanel>
+    <MudExpansionPanel Text="@SettingsText">
+        <MudSlider @bind-Value="@BacTracker.Weight" Min="10" Max="200" Step="1" ValueLabel="true" >Weight</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Weight" Variant="Variant.Text" Min="10" Max="200" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> KG
+        
+            
+        <MudSelect @bind-Value="BacTracker.Gender" Label="Gender" Style="margin-top: 1rem;">
+            <MudSelectItem Value="@("male")">Male</MudSelectItem>
+            <MudSelectItem Value="@("female")">Female</MudSelectItem>
+            <MudSelectItem Value="@("other")">Other (mid-point)</MudSelectItem>
+        </MudSelect>
+    </MudExpansionPanel>
+    
+    <MudExpansionPanel Text="History" Disabled="!BacTracker.Drinks.Any()" @bind-IsExpanded="ShowHistory">
+        
+            <MudSimpleTable>
+                <tbody>
+                
+        @foreach (var drink in BacTracker.Drinks.OrderByDescending(d => d.Time))
+        {
+            <tr>
+                <td>@drink.Time.ToLocalTime().ToString("f")</td>
+                <td >@drink.ToString()</td>
+                <td >@drink.Grams.ToString("N2") g</td>
+                <td ><MudFab @onclick="() => RemoveDrink(drink)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Delete"></MudFab></td>
+                <td ><MudFab @onclick="() => BacTracker.DuplicateDrink(drink.DrinkId)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Add"></MudFab></td>
+            </tr>
+        }
+                </tbody>
+            </MudSimpleTable>
+    </MudExpansionPanel>     
+</MudExpansionPanels>
+
+@code {
+
+    [AllowNull]
+    private BacTracker BacTracker { get; set; }
+    private double StandardDrinks { get; set; } = 1.2; 
+    private double DrinkPercent { get; set; } = 4.5;
+    private double SizeInMl { get; set; } = 375;
+    private int MinutesAgo { get; set; }
+
+    private string SettingsText => $"Settings ({BacTracker.Gender}, {BacTracker.Weight} kg)";
+    private readonly ChartOptions _chartOptions = new()
+    {
+        YAxisFormat = "N2", 
+        XAxisLines = false,
+        YAxisTicks = 1
+    };
+
+    private Task _interval;
+    private bool ShowHistory { get; set; } = false;
+
+    public Index()
+    {
+        _interval = Task.Run(async () =>
+        {
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+                StateHasChanged();
+            }
+        });
+    }
+        
+    private void AddStandardDrink() => 
+        BacTracker.AddDrink(new StandardDrink(DateTimeOffset.UtcNow.AddMinutes(-MinutesAgo), StandardDrinks));
+    private void AddDrinkInMl() => 
+        BacTracker.AddDrink(new DrinkInMl(DateTimeOffset.UtcNow.AddMinutes(-MinutesAgo), SizeInMl, DrinkPercent));
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        try
+        {
+            var bacTracker = localStorage.GetItem<BacTracker>("bacTracker");
+
+            BacTracker = bacTracker ?? new();
+        }
+        catch (Exception e)
+        {
+            BacTracker = new();
+            Console.WriteLine($"Error reading, {e.Message} - {e.StackTrace}");
+        }
+        
+        BacTracker.UpdateCallback = bt =>
+        {
+            try
+            {
+                localStorage.SetItem("bacTracker", bt);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error writing, {e.Message} - {e.StackTrace}");
+            }
+        };
+    }
+
+    private void RemoveDrink(IDrink drink)
+    {
+        BacTracker.RemoveDrink(drink);
+        if (!BacTracker.Drinks.Any()) ShowHistory = false;
+    }
+
+}
