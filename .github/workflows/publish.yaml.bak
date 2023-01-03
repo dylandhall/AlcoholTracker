@@ -1,0 +1,34 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet publish --no-restore
+      env:
+        Configuration: Release
+    - name: Compress build output
+      run: Compress-Archive -Path $env:GITHUB_WORKSPACE\FolderSize\bin\Release\net6.0-windows\publish\* -DestinationPath $env:RUNNER_TEMP\build.zip
+      shell: powershell
+      env:
+        RUNNER_TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+    - name: Publish binaries
+      run: gh release upload 'v1.0.2' "${{ env.RUNNER_TEMP }}\\build.zip" --clobber
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RUNNER_TEMP: ${{ runner.temp }}
