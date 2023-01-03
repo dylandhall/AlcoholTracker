@@ -14,21 +14,31 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet publish --no-restore
+      run: dotnet workload install wasm-tools && dotnet publish .\AlcoholTracker\AlcoholTracker.csproj -c Release -o release --nologo
       env:
         Configuration: Release
+
     - name: Compress build output
       run: Compress-Archive -Path $env:GITHUB_WORKSPACE\FolderSize\bin\Release\net6.0-windows\publish\* -DestinationPath $env:RUNNER_TEMP\build.zip
       shell: powershell
       env:
         RUNNER_TEMP: ${{ runner.temp }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
-    - name: Publish binaries
-      run: gh release upload 'v1.0.2' "${{ env.RUNNER_TEMP }}\\build.zip" --clobber
+
+    - name: Change base-tag in index.html from / to AlcoholTracker
+      run: Get-Content $env:GITHUB_WORKSPACE\release\wwwroot\index.html | %{$_ -Replace "/<base href="\/" \/>", "<base href="\/AlcoholTracker\/" \/>"} > $env:GITHUB_WORKSPACE\release\wwwroot\index.html
+      shell: powershell
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         RUNNER_TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+
+    - name: Commit wwwroot to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: release/wwwroot

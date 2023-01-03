@@ -18,9 +18,24 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet publish -c Release -o release --nologo
+      run: dotnet workload install wasm-tools && dotnet publish .\AlcoholTracker\AlcoholTracker.csproj -c Release -o release --nologo
       env:
         Configuration: Release
+
+    - name: Compress build output
+      run: Compress-Archive -Path $env:GITHUB_WORKSPACE\FolderSize\bin\Release\net6.0-windows\publish\* -DestinationPath $env:RUNNER_TEMP\build.zip
+      shell: powershell
+      env:
+        RUNNER_TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+
+    - name: Change base-tag in index.html from / to AlcoholTracker
+      run: Get-Content $env:GITHUB_WORKSPACE\release\wwwroot\index.html | %{$_ -Replace "/<base href="\/" \/>", "<base href="\/AlcoholTracker\/" \/>"} |  Out-File -FilePath $env:GITHUB_WORKSPACE\release\wwwroot\index.html
+      shell: powershell
+      env:
+        RUNNER_TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+
     - name: Commit wwwroot to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
