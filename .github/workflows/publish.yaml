@@ -25,7 +25,7 @@ jobs:
         Configuration: Release
         GITHUB_WORKSPACE: ${{ github.workspace }}
     - name: Change base-tag in index.html from / to AlcoholTracker
-      run: Get-Content $env:GITHUB_WORKSPACE\release\wwwroot\index.html | %{$_ -Replace "<base href=""/"" \/>", "<base href=""/AlcoholTracker/"" />"} |  Out-File -FilePath $env:GITHUB_WORKSPACE\release\wwwroot\index.html
+      run: Get-Content $env:GITHUB_WORKSPACE\release\wwwroot\index.html | %{$_ -Replace "<base href=""/"" />", "<base href=""/AlcoholTracker/"" />"} |  Out-File -FilePath $env:GITHUB_WORKSPACE\release\wwwroot\index.html
       shell: powershell
       env:
         RUNNER_TEMP: ${{ runner.temp }}
@@ -36,4 +36,4 @@ jobs:
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages
-        FOLDER: release/wwwroot
+        FOLDER: ${{ github.workspace }}/release/wwwroot
