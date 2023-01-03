@@ -7,7 +7,7 @@
   "linkerEnabled": true,
   "resources": {
     "assembly": {
-      "AlcoholTracker.dll": "sha256-PCUElmWshwchRz5oseWHChpx2F7QxeJ11W0ZsUEZXsA=",
+      "AlcoholTracker.dll": "sha256-TRmM\/hLPkNO5N011ekjHAPPavddBusJB0QG9wUAqsws=",
       "Blazored.LocalStorage.dll": "sha256-eXVgTw72kEn74FZgDQbLtvAmXbiZDSj5gzUnxVmwowQ=",
       "Microsoft.AspNetCore.Components.dll": "sha256-Ytou0\/HTcAnuKUuXol3IdGjxkllrFqu\/QNAUiQ\/gpIM=",
       "Microsoft.AspNetCore.Components.Forms.dll": "sha256-mMAvME0N3JYHVEVcs\/l3o685lcq\/fJC6xr3mJ3iNAGY=",
@@ -24,7 +24,7 @@
       "Microsoft.Extensions.Primitives.dll": "sha256-eXvGx2jcjpTPEJoAHBsW\/VuMPbNyyU+AsuhPmkzSSRY=",
       "Microsoft.JSInterop.dll": "sha256-nRIYymw1CokPwUDSUBNUhzMpEKTG8+RY1rAsNaEEX5k=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-bn\/jJGkSeaQbmqAl6uUM0y1joLrVEzldOc3y5mscYMk=",
-      "MudBlazor.dll": "sha256-Dm249RpZ5YIwGUdcgAEhvha1MSplg02jpv057rt5Ons=",
+      "MudBlazor.dll": "sha256-INg4H5v5nLqO\/Dxz1qp8vA6Zcrz6YpAaRCh6LH9FggE=",
       "System.Collections.Concurrent.dll": "sha256-YlIg0b1LWEai7f+vg9E6\/lVKTEwq3kcS1W+rlsDYpQM=",
       "System.Collections.dll": "sha256-3kp\/LECJU0dRTvgVkOG3vj6yQtUCH+dlyJAftQwWMlw=",
       "System.ComponentModel.Annotations.dll": "sha256-gInlM8xRRjKVFCIBDZAWrUUgWt6laUnS4Gpv8idDJlI=",
@@ -55,7 +55,7 @@
     "runtime": {
       "dotnet.7.0.1.s424qb68xe.js": "sha256-tQfLGoTT8eTE\/HxxxNosiZaooRzX3q8xfyozXj+7G1c=",
       "dotnet.timezones.blat": "sha256-6Aw0ALXLw\/A0vGcC5uG5GnFafYpL\/iHHLo22LyOR+TA=",
-      "dotnet.wasm": "sha256-hFS8ONszxJhIf+O3RW6MGcXT6YvQDd5NnfDDVgyTG50=",
+      "dotnet.wasm": "sha256-\/fPUH6srSBImlUc7SaeSICoLVy6Mc71ysJsFblivrjw=",
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
       "icudt_EFIGS.dat": "sha256-l7NtS3cI+3VUoQ2XQvlzMb8x4Ow1BtnOJNLWc6bifW0=",
       "icudt_no_CJK.dat": "sha256-SNAStZO8ryN4gEbGzRYHea+b+VMpFMMNWXKTM3Y1gH4=",
@@ -64,7 +64,7 @@
     "runtimeAssets": {
       "dotnet.wasm": {
         "behavior": "dotnetwasm",
-        "hash": "sha256-hFS8ONszxJhIf+O3RW6MGcXT6YvQDd5NnfDDVgyTG50="
+        "hash": "sha256-\/fPUH6srSBImlUc7SaeSICoLVy6Mc71ysJsFblivrjw="
       }
     },
     "satelliteResources": null
