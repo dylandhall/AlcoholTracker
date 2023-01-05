@@ -149,6 +149,13 @@ public class BacTracker
     private int GetHashOfCurrentData() => HashCode.Combine(HashCode.Combine(Drinks), Weight, Gender);
 
 
+    public void ClearRecentDrinks()
+    {
+        CountByHash.Clear();
+        StandardDrinksBase.Clear();
+        DrinkInMlsBase.Clear();
+    }
+    
     private List<ChartSeries> GetSeries() => new() {
         new ChartSeries
         {

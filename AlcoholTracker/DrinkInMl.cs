@@ -4,7 +4,7 @@ namespace AlcoholTracker;
 
 public class DrinkInMlBase:IDrinkBase
 {
-    public int DrinkHash => (int) ((SizeInMl + DrinkPercent) * 1000);
+    public int DrinkHash => (int) ((SizeInMl + DrinkPercent) * 1000) * -1;
     public double SizeInMl { get; set; }
     public double DrinkPercent { get; set; }
     public override string ToString() => $"{SizeInMl} mL at {DrinkPercent}%";

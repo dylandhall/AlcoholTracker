@@ -10,17 +10,19 @@
 <MudChart ChartType="ChartType.Line" SelectedIndex="0" XAxisLabels="BacTracker.XAxisLabels" ChartSeries="BacTracker.GetTimeSeries()" Width="100%" Height="350px" ChartOptions="_chartOptions" ></MudChart>
 
 <MudExpansionPanels>
-    <MudExpansionPanel Text="Recent" Disabled="!BacTracker.RecentDrinks.Any()">
+    <MudExpansionPanel Text="Recent" Disabled="!BacTracker.RecentDrinks.Any()" @bind-IsExpanded="ShowRecent">
 
         
         <MudSlider Style="margin-top: 1rem;" @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
         <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
-        <div class="d-flex flex-wrap flex-grow-1 gap-2 mt-4">
-        @foreach (var drink in BacTracker.RecentDrinks)
-        {
-            <MudButton @onclick="() => AddRecentDrinkByHash(drink.DrinkHash)" Variant="Variant.Filled">@drink.ToString()</MudButton>
-        }
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            @foreach (var drink in BacTracker.RecentDrinks)
+            {
+                <MudButton @onclick="() => AddRecentDrinkByHash(drink.DrinkHash)" Variant="Variant.Filled">@drink.ToString()</MudButton>
+            }
+            <MudButton @onclick="() => { BacTracker.ClearRecentDrinks(); ShowRecent = false; }" IconSize="Size.Small" StartIcon="@Icons.Material.Outlined.Clear"></MudButton>
         </div>
+
     </MudExpansionPanel>
     <MudExpansionPanel Text="Standard Drinks">
         <MudSlider @bind-Value="@StandardDrinks" Min="0" Max="10" Step="0.1" ValueLabel="true">Standard drinks</MudSlider>
@@ -94,6 +96,7 @@
     private Task _interval;
     private bool ShowHistory { get; set; }
     private bool ShowSettings { get; set; }
+    private bool ShowRecent { get; set; }
 
     public Index()
     {
