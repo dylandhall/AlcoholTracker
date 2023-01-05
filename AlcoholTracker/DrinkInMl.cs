@@ -2,7 +2,15 @@
 
 namespace AlcoholTracker;
 
-public class DrinkInMl:IDrink
+public class DrinkInMlBase:IDrinkBase
+{
+    public int DrinkHash => (int) ((SizeInMl + DrinkPercent) * 1000);
+    public double SizeInMl { get; set; }
+    public double DrinkPercent { get; set; }
+    public override string ToString() => $"{SizeInMl} mL at {DrinkPercent}%";
+}
+
+public class DrinkInMl: DrinkInMlBase, IDrink
 {
     public DrinkInMl()
     {
@@ -22,12 +30,4 @@ public class DrinkInMl:IDrink
     [JsonIgnore]
     public double Grams =>
         SizeInMl * (DrinkPercent / 100);
-
-    
-    public double SizeInMl { get; set; }
-    public double DrinkPercent { get; set; }
-
-    public override string ToString() => $"{SizeInMl} mL at {DrinkPercent}%";
-
-
 }

@@ -45,6 +45,20 @@ public class BacTracker
 
 
     [JsonIgnore]
+    public List<IDrinkBase> RecentDrinks => 
+        StandardDrinksBase
+            .Where(d => CountByHash.ContainsKey(d.Key))
+            .Select(d => d.Value as IDrinkBase)
+            .Concat(DrinkInMlsBase
+                .Where(d => CountByHash.ContainsKey(d.Key))
+                .Select(d => d.Value as IDrinkBase))
+            .OrderByDescending(d => CountByHash.TryGetValue(d.DrinkHash, out var v) ? v : 0)
+            .ToList();
+    public Dictionary<int, StandardDrinkBase> StandardDrinksBase { get; set; } = new();
+    public Dictionary<int, DrinkInMlBase> DrinkInMlsBase { get; set; } = new();
+    public Dictionary<int,int> CountByHash { get; set; } = new();
+
+    [JsonIgnore]
     public List<IDrink> Drinks =>
         StandardDrinks.Cast<IDrink>().Concat(DrinkInMls).ToList();
 
@@ -73,6 +87,22 @@ public class BacTracker
     [JsonIgnore] 
     public string[] XAxisLabels { get; set; } = GetXAxisLabels();
 
+    public void AddRecentDrinkByHash(DateTimeOffset time, int hash)
+    {
+        if (StandardDrinksBase.ContainsKey(hash))
+        {
+            var standardDrink = StandardDrinksBase[hash];
+            AddDrink(new StandardDrink(time, standardDrink.StandardDrinks));
+            return;
+        }
+
+        if (!DrinkInMlsBase.ContainsKey(hash)) return;
+
+        var drinkInMls = DrinkInMlsBase[hash];
+
+        AddDrink(new DrinkInMl(time, drinkInMls.SizeInMl, drinkInMls.DrinkPercent));
+    }
+    
     public void DuplicateDrink(Guid drinkId)
     {
         var drinkInMl = DrinkInMls.SingleOrDefault(d => d.DrinkId==drinkId);
@@ -134,9 +164,28 @@ public class BacTracker
     public void AddDrink(DrinkInMl drinkInMl)
     {
         DrinkInMls.Add(drinkInMl);
+        var h = drinkInMl.DrinkHash;
+
+        IncrementDrinkCount(h);
+
+        if (!DrinkInMlsBase.ContainsKey(h))
+            DrinkInMlsBase.Add(h, drinkInMl);
     }
+
+    private void IncrementDrinkCount(int h)
+    {
+        if (CountByHash.ContainsKey(h))
+            CountByHash[h] += 1;
+        else CountByHash.Add(h, 1);
+    }
+
     public void AddDrink(StandardDrink standardDrink)
     {
         StandardDrinks.Add(standardDrink);
+        var h = standardDrink.DrinkHash;
+        
+        IncrementDrinkCount(h);
+        if (!StandardDrinksBase.ContainsKey(h))
+            StandardDrinksBase.Add(h, standardDrink);
     }
 }

@@ -2,7 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace AlcoholTracker;
 
-public class StandardDrink:IDrink
+public class StandardDrinkBase : IDrinkBase
+{
+    public int DrinkHash => (int) (StandardDrinks * 1000);
+    public double StandardDrinks { get; set; }
+    public override string ToString() => $"{StandardDrinks:N1} standard drinks";
+}
+
+public class StandardDrink: StandardDrinkBase, IDrink
 {
     public StandardDrink()
     {
@@ -18,11 +25,7 @@ public class StandardDrink:IDrink
 
     public Guid DrinkId { get; set; }
     public DateTimeOffset Time { get; set; }
-    public double StandardDrinks { get; set; }
 
     [JsonIgnore]
     public double Grams => StandardDrinks * 10;
-    
-    public override string ToString() => $"{StandardDrinks:N1} standard drinks";
-
 }
