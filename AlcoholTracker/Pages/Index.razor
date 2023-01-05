@@ -15,13 +15,12 @@
         
         <MudSlider Style="margin-top: 1rem;" @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
         <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
-        
-        <MudStack Row="true">
+        <div class="d-flex flex-wrap flex-grow-1 gap-2 mt-4">
         @foreach (var drink in BacTracker.RecentDrinks)
         {
-            <div style="margin-top: 1.5rem;"><MudButton @onclick="() => AddRecentDrinkByHash(drink.DrinkHash)" Variant="Variant.Filled">@drink.ToString()</MudButton></div>
+            <MudButton @onclick="() => AddRecentDrinkByHash(drink.DrinkHash)" Variant="Variant.Filled">@drink.ToString()</MudButton>
         }
-        </MudStack>
+        </div>
     </MudExpansionPanel>
     <MudExpansionPanel Text="Standard Drinks">
         <MudSlider @bind-Value="@StandardDrinks" Min="0" Max="10" Step="0.1" ValueLabel="true">Standard drinks</MudSlider>
