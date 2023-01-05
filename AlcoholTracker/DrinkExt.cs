@@ -9,5 +9,7 @@ public static class DrinkExt
     }
     public static double GetBac(this IDrink drink, double weight, double rate, DateTimeOffset now) => WidmarkFormula(drink.Grams, weight, rate, (now - drink.Time).TotalMinutes);
     public static DateTimeOffset GetCutoff(DateTimeOffset now) => now.AddDays(-1);
+    
+    // i hate that i'm calculating the cutoff more than once but i want it centralised
     public static bool IsDrinkPastCutoff(this IDrink drink, DateTimeOffset now) => drink.Time < GetCutoff(now);
 }
