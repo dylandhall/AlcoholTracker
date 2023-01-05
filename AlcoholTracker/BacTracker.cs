@@ -44,10 +44,28 @@ public class BacTracker
     public List<StandardDrink> StandardDrinks { get; set; } = new();
     public List<DrinkInMl> DrinkInMls { get; set; } = new();
 
+    public Dictionary<Guid, DateTimeOffset> RemovedDrinkIds { get; set; } = new();
 
     [JsonIgnore]
-    public List<IDrinkBase> RecentDrinks => 
-        StandardDrinksBase
+    public List<IDrinkBase> RecentDrinks
+    {
+        get
+        {
+            var combinedHash = HashCode.Combine(CountByHash.Keys);
+            if (_recentDrinksHash == combinedHash) return _recentDrinks ?? new();
+
+            _recentDrinksHash = combinedHash;
+            _recentDrinks = GetRecentDrinks();
+            return _recentDrinks;
+        }
+    }
+
+    private int _recentDrinksHash;
+    private List<IDrinkBase>? _recentDrinks;
+
+    private List<IDrinkBase> GetRecentDrinks()
+    {
+        return StandardDrinksBase
             .Where(d => CountByHash.ContainsKey(d.Key))
             .Select(d => d.Value as IDrinkBase)
             .Concat(DrinkInMlsBase
@@ -56,6 +74,8 @@ public class BacTracker
             .OrderByDescending(d => CountByHash.TryGetValue(d.DrinkHash, out var v) ? v : 0)
             .Take(10)
             .ToList();
+    }
+
     public Dictionary<int, StandardDrinkBase> StandardDrinksBase { get; set; } = new();
     public Dictionary<int, DrinkInMlBase> DrinkInMlsBase { get; set; } = new();
     public ConcurrentDictionary<int, int> CountByHash { get; set; } = new();
@@ -74,16 +94,22 @@ public class BacTracker
 
     public void RemoveDrink(IDrink drink)
     {
-        int r = StandardDrinks.RemoveAll(d => d.DrinkId == drink.DrinkId);
+        RemovedDrinkIds.TryAdd(drink.DrinkId, DateTimeOffset.UtcNow);
+        var r = StandardDrinks.RemoveAll(d => d.DrinkId == drink.DrinkId);
         if (r > 0) return;
         DrinkInMls.RemoveAll(d => d.DrinkId == drink.DrinkId);
     }
-
+    
+    
+    
     private void PurgeOldDrinks()
     {
-        var cutoff = DateTimeOffset.UtcNow.AddDays(-1);
-        StandardDrinks.RemoveAll(d => d.Time < cutoff);
-        DrinkInMls.RemoveAll(d => d.Time < cutoff);
+        var now = DateTimeOffset.UtcNow;
+        StandardDrinks.RemoveAll(d => d.IsDrinkPastCutoff(now));
+        DrinkInMls.RemoveAll(d => d.IsDrinkPastCutoff(now));
+        var cutoff = DrinkExt.GetCutoff(now);
+        foreach (var (drinkId, _) in RemovedDrinkIds.Where(v => v.Value < cutoff))
+            RemovedDrinkIds.Remove(drinkId);
     }
 
     [JsonIgnore] 
