@@ -54,6 +54,7 @@ public class BacTracker
                 .Where(d => CountByHash.ContainsKey(d.Key))
                 .Select(d => d.Value as IDrinkBase))
             .OrderByDescending(d => CountByHash.TryGetValue(d.DrinkHash, out var v) ? v : 0)
+            .Take(10)
             .ToList();
     public Dictionary<int, StandardDrinkBase> StandardDrinksBase { get; set; } = new();
     public Dictionary<int, DrinkInMlBase> DrinkInMlsBase { get; set; } = new();
