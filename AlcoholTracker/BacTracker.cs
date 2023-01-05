@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MudBlazor;
@@ -56,7 +57,7 @@ public class BacTracker
             .ToList();
     public Dictionary<int, StandardDrinkBase> StandardDrinksBase { get; set; } = new();
     public Dictionary<int, DrinkInMlBase> DrinkInMlsBase { get; set; } = new();
-    public Dictionary<int,int> CountByHash { get; set; } = new();
+    public ConcurrentDictionary<int, int> CountByHash { get; set; } = new();
 
     [JsonIgnore]
     public List<IDrink> Drinks =>
@@ -168,16 +169,11 @@ public class BacTracker
 
         IncrementDrinkCount(h);
 
-        if (!DrinkInMlsBase.ContainsKey(h))
-            DrinkInMlsBase.Add(h, drinkInMl);
+        DrinkInMlsBase.TryAdd(h, drinkInMl);
     }
 
-    private void IncrementDrinkCount(int h)
-    {
-        if (CountByHash.ContainsKey(h))
-            CountByHash[h] += 1;
-        else CountByHash.Add(h, 1);
-    }
+    private void IncrementDrinkCount(int h) =>
+        CountByHash.AddOrUpdate(h, _ => 1, (_, v) => v + 1);
 
     public void AddDrink(StandardDrink standardDrink)
     {
@@ -185,7 +181,6 @@ public class BacTracker
         var h = standardDrink.DrinkHash;
         
         IncrementDrinkCount(h);
-        if (!StandardDrinksBase.ContainsKey(h))
-            StandardDrinksBase.Add(h, standardDrink);
+        StandardDrinksBase.TryAdd(h, standardDrink);
     }
 }
