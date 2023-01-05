@@ -7,7 +7,7 @@
   "linkerEnabled": true,
   "resources": {
     "assembly": {
-      "AlcoholTracker.dll": "sha256-UAQB76i2D29uEFHf+Wu1HQl4cyoCwc0ATmmIrNlUE8M=",
+      "AlcoholTracker.dll": "sha256-fJvU53mjo8b9xtiMNqv+bF\/kbWaR+Vh1AS9DyQ08IYk=",
       "Blazored.LocalStorage.dll": "sha256-eXVgTw72kEn74FZgDQbLtvAmXbiZDSj5gzUnxVmwowQ=",
       "Microsoft.AspNetCore.Components.dll": "sha256-Ytou0\/HTcAnuKUuXol3IdGjxkllrFqu\/QNAUiQ\/gpIM=",
       "Microsoft.AspNetCore.Components.Forms.dll": "sha256-mMAvME0N3JYHVEVcs\/l3o685lcq\/fJC6xr3mJ3iNAGY=",
@@ -55,7 +55,7 @@
     "runtime": {
       "dotnet.7.0.1.s424qb68xe.js": "sha256-tQfLGoTT8eTE\/HxxxNosiZaooRzX3q8xfyozXj+7G1c=",
       "dotnet.timezones.blat": "sha256-6Aw0ALXLw\/A0vGcC5uG5GnFafYpL\/iHHLo22LyOR+TA=",
-      "dotnet.wasm": "sha256-1+Rh3SHK7LR9shKeDd4IUbYbzjxD2X6kFvgspV6wTjE=",
+      "dotnet.wasm": "sha256-zd5NOyfAjqTrqsJkvilKSlacdnkvX4Y3tiZ3BHCKkeU=",
       "icudt_CJK.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
       "icudt_EFIGS.dat": "sha256-l7NtS3cI+3VUoQ2XQvlzMb8x4Ow1BtnOJNLWc6bifW0=",
       "icudt_no_CJK.dat": "sha256-SNAStZO8ryN4gEbGzRYHea+b+VMpFMMNWXKTM3Y1gH4=",
@@ -64,7 +64,7 @@
     "runtimeAssets": {
       "dotnet.wasm": {
         "behavior": "dotnetwasm",
-        "hash": "sha256-1+Rh3SHK7LR9shKeDd4IUbYbzjxD2X6kFvgspV6wTjE="
+        "hash": "sha256-zd5NOyfAjqTrqsJkvilKSlacdnkvX4Y3tiZ3BHCKkeU="
       }
     },
     "satelliteResources": null
