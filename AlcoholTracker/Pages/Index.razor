@@ -65,11 +65,10 @@
             @foreach (var drink in BacTracker.Drinks.OrderByDescending(d => d.Time))
             {
                 <tr>
-                    <td>@drink.Time.ToLocalTime().ToString("f")</td>
+                    <td>@drink.Time.ToLocalTime().ToString("h:mm tt")</td>
                     <td >@drink.ToString()</td>
-                    <td >@drink.Grams.ToString("N2") g</td>
                     <td ><MudFab @onclick="() => RemoveDrink(drink)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Delete"></MudFab></td>
-                    <td ><MudFab @onclick="() => BacTracker.DuplicateDrink(drink.DrinkId)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Add"></MudFab></td>
+                    <td ><MudFab @onclick="() => BacTracker.DuplicateDrink(drink.DrinkId)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.FileCopy"></MudFab></td>
                 </tr>
             }
             </tbody>
