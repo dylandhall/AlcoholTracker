@@ -29,15 +29,16 @@ public class BacTracker
 
 
     public int Weight { get; set; } = 80;
-
-    public string Gender { get; set; } = "male";
-
+    public Gender Gender { get; set; } = Gender.Male;
+    public int HeightInCm { get; set; } = 165;
+    public DateTime? BirthDate { get; set; } = DateTimeOffset.UtcNow.AddYears(-30).DateTime;
+    
     private double EliminationRate =>
         Gender switch
         {
-            "male" => 0.68,
-            "female" => 0.55,
-            _ => 0.62
+            Gender.Male => 0.68,
+            Gender.Female => 0.55,
+            _ => throw new Exception("Unsupported")
         };
 
 
