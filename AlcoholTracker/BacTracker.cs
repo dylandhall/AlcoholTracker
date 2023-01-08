@@ -207,6 +207,44 @@ public class BacTracker
         DrinkInMlsBase.TryAdd(h, drinkInMl);
     }
 
+    
+    public void MergeFromStorage(BacTracker bacTracker)
+    {
+        
+        var existingDrinkIds = Drinks.Select(d => d.DrinkId).ToHashSet();
+
+        var hasNewDrinks = bacTracker.Drinks.Select(d => d.DrinkId).Except(existingDrinkIds).Any();
+        var hasRemovedDrinks = bacTracker.RemovedDrinkIds.Keys.Intersect(existingDrinkIds).Any();
+        
+        foreach (var (drinkId, time) in bacTracker.RemovedDrinkIds.Where(kv => !RemovedDrinkIds.ContainsKey(kv.Key)))
+            RemovedDrinkIds.TryAdd(drinkId, time);
+        
+        if (!hasNewDrinks && !hasRemovedDrinks) return;
+
+        var allRemovedIds = RemovedDrinkIds.Keys.ToHashSet();
+        
+        var now = DateTimeOffset.UtcNow;
+        StandardDrinks.AddRange(bacTracker.StandardDrinks.Where(d => !allRemovedIds.Contains(d.DrinkId) && !d.IsDrinkPastCutoff(now) && !existingDrinkIds.Contains(d.DrinkId)));
+        DrinkInMls.AddRange(bacTracker.DrinkInMls.Where(d => !allRemovedIds.Contains(d.DrinkId) && !d.IsDrinkPastCutoff(now) && !existingDrinkIds.Contains(d.DrinkId)));
+
+        StandardDrinks.RemoveAll(d => allRemovedIds.Contains(d.DrinkId));
+        DrinkInMls.RemoveAll(d => allRemovedIds.Contains(d.DrinkId));
+
+        // This would sync the deleted usual drinks cache - not implementing
+        // Without storing hashes you've cleared you might get recent drinks popping up after clearing, which would be confusing.
+        // Leaving as I may implement in the future
+        
+        // foreach (var newCount in bacTracker.CountByHash.Where(kv => !currentBacTracker.CountByHash.ContainsKey(kv.Key)))
+        //     currentBacTracker.CountByHash.TryAdd(newCount.Key, newCount.Value);
+        // foreach (var newStandardDrinkBase in bacTracker.StandardDrinksBase.Where(kv =>
+        //     !currentBacTracker.StandardDrinksBase.ContainsKey(kv.Key)))
+        //     currentBacTracker.StandardDrinksBase.TryAdd(newStandardDrinkBase.Key, newStandardDrinkBase.Value);
+        // foreach (var newDrinkInMlBase in bacTracker.DrinkInMlsBase.Where(kv =>
+        //     !currentBacTracker.DrinkInMlsBase.ContainsKey(kv.Key)))
+        //     currentBacTracker.DrinkInMlsBase.TryAdd(newDrinkInMlBase.Key, newDrinkInMlBase.Value);
+    
+    }
+    
     private void IncrementDrinkCount(int h) =>
         CountByHash.AddOrUpdate(h, _ => 1, (_, v) => v + 1);
 

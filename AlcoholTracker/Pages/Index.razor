@@ -151,7 +151,9 @@
     {
         try
         {
-            MergeFromStorage(currentBacTracker);
+            
+            var bacTracker = LocalStorage.GetItem<BacTracker>("bacTracker");
+            if (bacTracker != null) currentBacTracker.MergeFromStorage(bacTracker);
 
             LocalStorage.SetItem("bacTracker", currentBacTracker);
         }
@@ -159,45 +161,6 @@
         {
             Console.WriteLine($"Error writing, {e.Message} - {e.StackTrace}");
         }
-    }
-
-    private void MergeFromStorage(BacTracker currentBacTracker)
-    {
-        var bacTracker = LocalStorage.GetItem<BacTracker>("bacTracker");
-        if (bacTracker == null) return;
-        
-        var existingDrinkIds = currentBacTracker.Drinks.Select(d => d.DrinkId).ToHashSet();
-
-        var hasNewDrinks = bacTracker.Drinks.Select(d => d.DrinkId).Except(existingDrinkIds).Any();
-        var hasRemovedDrinks = bacTracker.RemovedDrinkIds.Keys.Intersect(existingDrinkIds).Any();
-        
-        foreach (var (drinkId, time) in bacTracker.RemovedDrinkIds.Where(kv => !currentBacTracker.RemovedDrinkIds.ContainsKey(kv.Key)))
-            currentBacTracker.RemovedDrinkIds.TryAdd(drinkId, time);
-        
-        if (!hasNewDrinks && !hasRemovedDrinks) return;
-
-        var allRemovedIds = currentBacTracker.RemovedDrinkIds.Keys.ToHashSet();
-        
-        var now = DateTimeOffset.UtcNow;
-        currentBacTracker.StandardDrinks.AddRange(bacTracker.StandardDrinks.Where(d => !allRemovedIds.Contains(d.DrinkId) && !d.IsDrinkPastCutoff(now) && !existingDrinkIds.Contains(d.DrinkId)));
-        currentBacTracker.DrinkInMls.AddRange(bacTracker.DrinkInMls.Where(d => !allRemovedIds.Contains(d.DrinkId) && !d.IsDrinkPastCutoff(now) && !existingDrinkIds.Contains(d.DrinkId)));
-
-        currentBacTracker.StandardDrinks.RemoveAll(d => allRemovedIds.Contains(d.DrinkId));
-        currentBacTracker.DrinkInMls.RemoveAll(d => allRemovedIds.Contains(d.DrinkId));
-
-        // This would sync the deleted usual drinks cache - not implementing
-        // Without storing hashes you've cleared you might get recent drinks popping up after clearing, which would be confusing.
-        // Leaving as I may implement in the future
-        
-        // foreach (var newCount in bacTracker.CountByHash.Where(kv => !currentBacTracker.CountByHash.ContainsKey(kv.Key)))
-        //     currentBacTracker.CountByHash.TryAdd(newCount.Key, newCount.Value);
-        // foreach (var newStandardDrinkBase in bacTracker.StandardDrinksBase.Where(kv =>
-        //     !currentBacTracker.StandardDrinksBase.ContainsKey(kv.Key)))
-        //     currentBacTracker.StandardDrinksBase.TryAdd(newStandardDrinkBase.Key, newStandardDrinkBase.Value);
-        // foreach (var newDrinkInMlBase in bacTracker.DrinkInMlsBase.Where(kv =>
-        //     !currentBacTracker.DrinkInMlsBase.ContainsKey(kv.Key)))
-        //     currentBacTracker.DrinkInMlsBase.TryAdd(newDrinkInMlBase.Key, newDrinkInMlBase.Value);
-    
     }
 
     private async void ClearRecent()
