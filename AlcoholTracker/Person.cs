@@ -22,10 +22,10 @@ public class Person
 
     public double GetAvgRValue()
     {
-        if (_rValueHash == GetDetailsHash())
+        var rValueHash = GetDetailsHash();
+        if (_rValueHash == rValueHash)
             return _rValue;
         
-        _rValueHash = GetDetailsHash();
         _rValue = Gender switch
             {
                 Gender.Male => MaleAvgTbwFormula(WeightInKg, HeightInCm,
@@ -34,6 +34,7 @@ public class Person
                 _ => throw new Exception("Unsupported")
             };
 
+        _rValueHash = rValueHash;
         return _rValue;
     }
 
