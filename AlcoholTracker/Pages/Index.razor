@@ -48,15 +48,15 @@
         <div style="margin-top: 1.5rem;"><MudButton @onclick="AddDrinkInMl" Variant="Variant.Filled">Add drink</MudButton></div>
     </MudExpansionPanel>
     <MudExpansionPanel Text="@SettingsText">
-        <MudSlider @bind-Value="@BacTracker.Weight" Min="10" Max="200" Step="1" ValueLabel="true">Weight</MudSlider>
-        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Weight" Variant="Variant.Text" Min="10" Max="200" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> KG
+        <MudSlider @bind-Value="@BacTracker.Person.WeightInKg" Min="10" Max="200" Step="1" ValueLabel="true">Weight</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Person.WeightInKg" Variant="Variant.Text" Min="10" Max="200" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> KG
         
-        <MudSlider @bind-Value="@BacTracker.HeightInCm" Min="100" Max="220" Step="1" ValueLabel="true">Height</MudSlider>
-        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.HeightInCm" Variant="Variant.Text" Min="100" Max="220" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> CM
+        <MudSlider @bind-Value="@BacTracker.Person.HeightInCm" Min="100" Max="220" Step="1" ValueLabel="true">Height</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Person.HeightInCm" Variant="Variant.Text" Min="100" Max="220" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> CM
 
-        <MudDatePicker @bind-Date="BacTracker.BirthDate" Culture="_cultureInfo"></MudDatePicker>
+        <MudDatePicker @bind-Date="BacTracker.Person.BirthDate" Culture="_cultureInfo"></MudDatePicker>
 
-        <MudSelect @bind-Value="BacTracker.Gender" Label="Gender" Class="mt-4" FullWidth="false" >
+        <MudSelect @bind-Value="BacTracker.Person.Gender" Label="Gender" Class="mt-4" FullWidth="false" >
             <MudSelectItem Value="@(Gender.Male)">Male</MudSelectItem>
             <MudSelectItem Value="@(Gender.Female)">Female</MudSelectItem>
         </MudSelect>
@@ -92,7 +92,7 @@
     private double SizeInMl { get; set; } = 375;
     private int MinutesAgo { get; set; }
     private readonly CultureInfo _cultureInfo = CultureInfo.GetCultureInfo("en-au");
-    private string SettingsText => $"Settings ({BacTracker.Gender}, {BacTracker.Weight} kg)";
+    private string SettingsText => $"Settings ({BacTracker.Person.Gender}, {BacTracker.Person.WeightInKg} kg, {BacTracker.Person.HeightInCm} cm)";
     private readonly ChartOptions _chartOptions = new()
     {
         YAxisFormat = "N2", 

@@ -27,21 +27,7 @@ public class BacTracker
     private int _hashOfList;
     private DateTimeOffset _lastUpdated = DateTimeOffset.UtcNow;
 
-
-    public int Weight { get; set; } = 80;
-    public Gender Gender { get; set; } = Gender.Male;
-    public int HeightInCm { get; set; } = 165;
-    public DateTime? BirthDate { get; set; } = DateTimeOffset.UtcNow.AddYears(-30).DateTime;
-    
-    private double EliminationRate =>
-        Gender switch
-        {
-            Gender.Male => 0.68,
-            Gender.Female => 0.55,
-            _ => throw new Exception("Unsupported")
-        };
-
-
+    public Person Person { get; set; } = new();
     public List<StandardDrink> StandardDrinks { get; set; } = new();
     public List<DrinkInMl> DrinkInMls { get; set; } = new();
 
@@ -89,8 +75,8 @@ public class BacTracker
 
     public double GetPercentage(DateTimeOffset now)
     {
-        var rate = EliminationRate;
-        return Drinks.Where(d => d.Time<=now).Select(d => d.GetBac(Weight, rate, now)).Where(v => v>0).Sum();
+        
+        return Drinks.Where(d => d.Time<=now).Select(d => d.GetBac(Person, now)).Where(v => v>0).Sum();
     }
 
     public void RemoveDrink(IDrink drink)
@@ -173,7 +159,7 @@ public class BacTracker
         return _timeSeries;
     }
 
-    private int GetHashOfCurrentData() => HashCode.Combine(HashCode.Combine(Drinks), Weight, Gender);
+    private int GetHashOfCurrentData() => HashCode.Combine(HashCode.Combine(Drinks), Person.GetDetailsHash());
 
 
     public void ClearRecentDrinks()
