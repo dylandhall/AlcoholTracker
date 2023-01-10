@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ApexCharts;
 using MudBlazor;
 
 namespace AlcoholTracker;
@@ -15,14 +16,14 @@ public class BacTracker
     [JsonIgnore]
     public Action<BacTracker>? UpdateCallback { get; set; }
 
-    private List<ChartSeries> _timeSeries = new()
-    {
-        new()
-        {
-            Data = Enumerable.Range(StartXAxisMinutesAgo, NumberOfMinutesGraphed).Select(_ => 0d).ToArray(),
-            Name = AxisLabel
-        }
-    };
+    private List<TimeAndPercent> _timeSeries = new();
+    // {
+    //     // new()
+    //     // {
+    //     //     Data = Enumerable.Range(StartXAxisMinutesAgo, NumberOfMinutesGraphed).Select(_ => 0d).ToArray(),
+    //     //     Name = AxisLabel
+    //     // }
+    // };
 
     private int _hashOfList;
     private DateTimeOffset _lastUpdated = DateTimeOffset.UtcNow;
@@ -62,7 +63,6 @@ public class BacTracker
             .Take(10)
             .ToList();
     }
-
     public Dictionary<int, StandardDrinkBase> StandardDrinksBase { get; set; } = new();
     public Dictionary<int, DrinkInMlBase> DrinkInMlsBase { get; set; } = new();
     public ConcurrentDictionary<int, int> CountByHash { get; set; } = new();
@@ -75,7 +75,6 @@ public class BacTracker
 
     public double GetPercentage(DateTimeOffset now)
     {
-        
         return Drinks.Where(d => d.Time<=now).Select(d => d.GetBac(Person, now)).Where(v => v>0).Sum();
     }
 
@@ -86,9 +85,7 @@ public class BacTracker
         if (r > 0) return;
         DrinkInMls.RemoveAll(d => d.DrinkId == drink.DrinkId);
     }
-    
-    
-    
+
     private void PurgeOldDrinks()
     {
         var now = DateTimeOffset.UtcNow;
@@ -136,9 +133,10 @@ public class BacTracker
     
     public static string[] GetXAxisLabels() =>
         Enumerable.Range(StartXAxisMinutesAgo, NumberOfMinutesGraphed).Select(n => n%10==0 ? DateTime.Now.AddMinutes(n).ToString("H:mm"):String.Empty).ToArray();
-    public List<ChartSeries> GetTimeSeries() // => GetSeries(); 
+
+    public List<TimeAndPercent> TimeSeries { get; set; } = new();
+    public List<TimeAndPercent> GetTimeSeries() // => GetSeries(); 
     {
-        
         var hashOfList = GetHashOfCurrentData();
         var now = DateTimeOffset.UtcNow;
         var dataChanged = hashOfList != _hashOfList;
@@ -149,7 +147,7 @@ public class BacTracker
         XAxisLabels = GetXAxisLabels();
         _hashOfList = GetHashOfCurrentData();
         _lastUpdated = now;
-        _timeSeries = GetSeries();
+        _timeSeries = GetDrinksOverTime().ToList();
 
         if (dataChanged && UpdateCallback != null)
         {
@@ -169,18 +167,18 @@ public class BacTracker
         DrinkInMlsBase.Clear();
     }
     
-    private List<ChartSeries> GetSeries() => new() {
-        new ChartSeries
-        {
-            Data = GetDrinksOverTime(),
-            Name = AxisLabel
-        }
-    };
+    // private List<ChartSeries> GetSeries() => new() {
+    //     new ChartSeries
+    //     {
+    //         Data = GetDrinksOverTime(),
+    //         Name = AxisLabel
+    //     }
+    // };
 
-    private double[] GetDrinksOverTime()
+    private TimeAndPercent[] GetDrinksOverTime()
     {
         var now = DateTimeOffset.UtcNow;
-        return Enumerable.Range(StartXAxisMinutesAgo, NumberOfMinutesGraphed).Select(n => now.AddMinutes(n)).Select(GetPercentage).ToArray();
+        return Enumerable.Range(StartXAxisMinutesAgo, NumberOfMinutesGraphed).Select(n => now.AddMinutes(n)).Select(t => new TimeAndPercent { Percent = GetPercentage(t), Time  = t}).ToArray();
     }
 
     public void AddDrink(DrinkInMl drinkInMl)
@@ -241,5 +239,12 @@ public class BacTracker
         
         IncrementDrinkCount(h);
         StandardDrinksBase.TryAdd(h, standardDrink);
+        GetTimeSeries();
     }
+}
+
+public class TimeAndPercent
+{
+    public DateTimeOffset Time { get; set; }
+    public double Percent { get; set; }
 }

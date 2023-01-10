@@ -1,7 +1,7 @@
 ﻿@page "/"
-@using System.Text.Json
 @using System.Diagnostics.CodeAnalysis
 @using System.Globalization
+@using Align = MudBlazor.Align
 @inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
 @inject IDialogService DialogService
 
@@ -9,7 +9,10 @@
 
 <MudText Align="Align.Center" Typo="Typo.h6" >Current value: @BacTracker.GetPercentage().ToString("N3") % BAC</MudText>
 <MudText Align="Align.Center" Typo="Typo.subtitle2" >@BacTracker.GetPercentage(DateTimeOffset.UtcNow.AddHours(1)).ToString("N3") % BAC in one hour</MudText>
-<MudChart ChartType="ChartType.Line" SelectedIndex="0" XAxisLabels="BacTracker.XAxisLabels" ChartSeries="BacTracker.GetTimeSeries()" Width="100%" Height="350px" ChartOptions="_chartOptions" ></MudChart>
+
+<ApexChart @ref="BacChart" Title="BAC over time" TItem="TimeAndPercent">
+    <ApexPointSeries Items="BacTracker.GetTimeSeries()" TItem="TimeAndPercent" XValue="t => t.Time" YValue="t => (decimal?) t.Percent" ></ApexPointSeries>
+</ApexChart>
 
 <MudExpansionPanels>
     <MudExpansionPanel Text="Recent" Disabled="!BacTracker.RecentDrinks.Any()" @bind-IsExpanded="ShowRecent">
@@ -20,10 +23,10 @@
         <div class="d-flex flex-wrap gap-2 mt-4">
             @foreach (var drink in BacTracker.RecentDrinks)
             {
-                <MudButton @onclick="() => AddRecentDrinkByHash(drink.DrinkHash)" Variant="Variant.Filled">@drink.ToString()</MudButton>
+                <MudButton @onclick="() => { AddRecentDrinkByHash(drink.DrinkHash); return BacChart.UpdateSeriesAsync(); }" Variant="Variant.Filled">@drink.ToString()</MudButton>
             }
             <MudButton @onclick="ClearRecent" IconSize="Size.Small" StartIcon="@Icons.Material.Outlined.Clear"></MudButton>
-        </div>
+        </div> 
 
     </MudExpansionPanel>
     <MudExpansionPanel Text="Standard Drinks">
@@ -33,7 +36,7 @@
         <MudSlider Style="margin-top: 1rem;" @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
         <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
 
-        <div style="margin-top: 1.5rem;"><MudButton @onclick="AddStandardDrink" Variant="Variant.Filled">Add drink</MudButton></div>
+        <div style="margin-top: 1.5rem;"><MudButton @onclick="() => { AddStandardDrink(); return BacChart.UpdateSeriesAsync(); }" Variant="Variant.Filled">Add drink</MudButton></div>
     </MudExpansionPanel>
     <MudExpansionPanel Text="Drink by mL">
         <MudSlider @bind-Value="@DrinkPercent" Min="0" Max="80" Step="0.1" ValueLabel="true">Alcohol %</MudSlider>
@@ -45,18 +48,18 @@
         <MudSlider Style="margin-top: 1rem;" @bind-Value="@MinutesAgo" Min="0" Max="60" Step="1" ValueLabel="true">Finished</MudSlider>
         <div style=" display: inline-block;"><MudNumericField @bind-Value="MinutesAgo" Variant="Variant.Text" Min="0" Max="60" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> minutes ago
 
-        <div style="margin-top: 1.5rem;"><MudButton @onclick="AddDrinkInMl" Variant="Variant.Filled">Add drink</MudButton></div>
+        <div style="margin-top: 1.5rem;"><MudButton @onclick="() => { AddDrinkInMl(); return BacChart.UpdateSeriesAsync(); }" Variant="Variant.Filled">Add drink</MudButton></div>
     </MudExpansionPanel>
     <MudExpansionPanel Text="@SettingsText">
-        <MudSlider @bind-Value="@BacTracker.Person.WeightInKg" Min="10" Max="200" Step="1" ValueLabel="true">Weight</MudSlider>
-        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Person.WeightInKg" Variant="Variant.Text" Min="10" Max="200" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> KG
+        <MudSlider @bind-Value="@BacTracker.Person.WeightInKg" @bind-Value:after="() => BacChart.UpdateSeriesAsync()" Min="10" Max="200" Step="1" ValueLabel="true">Weight</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value:after="() => BacChart.UpdateSeriesAsync()" @bind-Value="BacTracker.Person.WeightInKg" Variant="Variant.Text" Min="10" Max="200" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> KG
         
-        <MudSlider @bind-Value="@BacTracker.Person.HeightInCm" Min="100" Max="220" Step="1" ValueLabel="true">Height</MudSlider>
-        <div style=" display: inline-block;"><MudNumericField @bind-Value="BacTracker.Person.HeightInCm" Variant="Variant.Text" Min="100" Max="220" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> CM
+        <MudSlider  @onchange="() => BacChart.UpdateSeriesAsync()"  @bind-Value="@BacTracker.Person.HeightInCm" Min="100" Max="220" Step="1" ValueLabel="true">Height</MudSlider>
+        <div style=" display: inline-block;"><MudNumericField @bind-Value:after="() => BacChart.UpdateSeriesAsync()" @bind-Value="BacTracker.Person.HeightInCm" Variant="Variant.Text" Min="100" Max="220" MaxLength="4" HideSpinButtons="true" FullWidth="false" Style="width: 3rem; margin-top: 0;" Margin="Margin.None"/></div> CM
 
-        <MudDatePicker @bind-Date="BacTracker.Person.BirthDate" Culture="_cultureInfo"></MudDatePicker>
-
-        <MudSelect @bind-Value="BacTracker.Person.Gender" Label="Gender" Class="mt-4" FullWidth="false" >
+        <MudDatePicker @bind-Date="BacTracker.Person.BirthDate" Culture="_cultureInfo" @bind-Date:after="() => BacChart.UpdateSeriesAsync()" ></MudDatePicker>
+ 
+        <MudSelect @bind-Value="BacTracker.Person.Gender" Label="Gender" Class="mt-4" FullWidth="false"  @bind-Value:after="() => BacChart.UpdateSeriesAsync()" >
             <MudSelectItem Value="@(Gender.Male)">Male</MudSelectItem>
             <MudSelectItem Value="@(Gender.Female)">Female</MudSelectItem>
         </MudSelect>
@@ -74,8 +77,8 @@
                 <tr>
                     <td>@drink.Time.ToLocalTime().ToString("h:mm tt")</td>
                     <td >@drink.ToString()</td>
-                    <td ><MudFab @onclick="() => RemoveDrink(drink)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Delete"></MudFab></td>
-                    <td ><MudFab @onclick="() => BacTracker.DuplicateDrink(drink.DrinkId)" Size="Size.Small" StartIcon="@Icons.Material.Outlined.FileCopy"></MudFab></td>
+                    <td ><MudFab @onclick="() => { RemoveDrink(drink); return BacChart.UpdateSeriesAsync(); }" Size="Size.Small" StartIcon="@Icons.Material.Outlined.Delete"></MudFab></td>
+                    <td ><MudFab @onclick="() => { BacTracker.DuplicateDrink(drink.DrinkId); return BacChart.UpdateSeriesAsync(); }" Size="Size.Small" StartIcon="@Icons.Material.Outlined.FileCopy"></MudFab></td>
                 </tr>
             }
             </tbody>
@@ -104,9 +107,15 @@
     private bool ShowHistory { get; set; }
     private bool ShowSettings { get; set; }
     private bool ShowRecent { get; set; }
+    private ApexChart<TimeAndPercent> BacChart { get; set; }
 
     public Index()
     {
+        // var o = new ApexChartOptions<TimeAndPercent>
+        // {
+        //
+        // };
+        //
         _interval = Task.Run(async () =>
         {
             while (true)
@@ -117,7 +126,7 @@
         });
     }
 
-    public void AddRecentDrinkByHash(int hash) =>
+    private void AddRecentDrinkByHash(int hash) =>
         BacTracker.AddRecentDrinkByHash(DateTimeOffset.UtcNow.AddMinutes(-MinutesAgo), hash);
     private void AddStandardDrink() => 
         BacTracker.AddDrink(new StandardDrink(DateTimeOffset.UtcNow.AddMinutes(-MinutesAgo), StandardDrinks));
@@ -143,7 +152,6 @@
             ShowSettings = true;
             Console.WriteLine($"Error reading, {e.Message} - {e.StackTrace}");
         }
-        
         BacTracker.UpdateCallback = BacTrackerUpdateCallback;
     }
 
@@ -151,7 +159,6 @@
     {
         try
         {
-            
             var bacTracker = LocalStorage.GetItem<BacTracker>("bacTracker");
             if (bacTracker != null) currentBacTracker.MergeFromStorage(bacTracker);
 
@@ -174,10 +181,11 @@
         StateHasChanged();
     }
 
-    private void RemoveDrink(IDrink drink)
+    private async void RemoveDrink(IDrink drink)
     {
         BacTracker.RemoveDrink(drink);
         if (!BacTracker.Drinks.Any()) ShowHistory = false;
+        await BacChart.UpdateSeriesAsync();
     }
 
 }
