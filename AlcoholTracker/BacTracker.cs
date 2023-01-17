@@ -153,7 +153,7 @@ public class BacTracker
         {
             UpdateCallback(this);
         }
-
+Console.WriteLine($"Update time series {GetPercentage()}");
         return _timeSeries;
     }
 
@@ -189,6 +189,7 @@ public class BacTracker
         IncrementDrinkCount(h);
 
         DrinkInMlsBase.TryAdd(h, drinkInMl);
+        Console.WriteLine(GetPercentage());
     }
 
     
