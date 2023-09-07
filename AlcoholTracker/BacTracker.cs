@@ -73,11 +73,12 @@ public class BacTracker
 
     public double GetPercentage() => GetPercentage(DateTimeOffset.UtcNow);
 
-    public double GetPercentage(DateTimeOffset now)
-    {
-        
-        return Drinks.Where(d => d.Time<=now).Select(d => d.GetBac(Person, now)).Where(v => v>0).Sum();
-    }
+    public double GetPercentage(DateTimeOffset now) => 
+        Drinks
+            .Where(d => d.Time<=now)
+            .Select(d => d.GetBac(Person, now))
+            .Where(v => v>0)
+            .Sum();
 
     public void RemoveDrink(IDrink drink)
     {
